@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Equipment Maintenance System (SEMS) | Industrial ERP Platform</title>
+  <meta name="description" content="Enterprise Smart Equipment Maintenance System for Infrastructure & Industrial Operations.">
+  
+  <!-- Typography - Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Instant Theme Persistence Bootstrapper (prevents theme flash on refresh) -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('sems_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+          document.body.className = savedTheme === 'dark' ? 'theme-dark' : 'theme-light';
+        });
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+  
+  <!-- External Libraries: Chart.js, FontAwesome Icons, jsPDF, SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="theme-dark">
+
+  <!-- ========================================================
+       PAGE 1 – LOGIN OVERLAY / PAGE
+       ======================================================== -->
+  <div id="loginPage" class="login-wrapper">
+    <div class="login-card-container">
+      <div class="login-visual-pane">
+        <div>
+          <div class="brand-header">
+            <div class="brand-logo-icon"><i class="fa-solid fa-gears"></i></div>
+            <div>
+              <div class="brand-title" style="color: #ffffff;">SMART FACTORY SEMS</div>
+              <div class="brand-subtitle" style="color: #94a3b8;">Asset Intelligence Suite</div>
+            </div>
+          </div>
+          <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 1rem;">Predictive Maintenance & Asset Lifecycle Platform</h2>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 0.5rem; line-height: 1.6;">
+            Empowering modern industrial infrastructure to eliminate machine breakdowns, lower downtime, and automate maintenance workflows.
+          </p>
+        </div>
+        <img src="/static/assets/factory_illustration.png" alt="Factory Illustration" class="factory-hero-img" onerror="this.src='https://illustrations.pouch.dev/isometric-factory.svg';">
+        <div style="font-size: 0.75rem; color: #64748b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">
+          Enterprise Smart Equipment Maintenance System v2.4
+        </div>
+      </div>
+
+      <div class="login-form-pane">
+        <div class="brand-header" style="margin-bottom: 1rem;">
+          <div class="brand-logo-icon"><i class="fa-solid fa-industry"></i></div>
+          <div>
+            <div class="brand-title">SEMS Industrial ERP</div>
+            <div class="brand-subtitle">Smart Equipment Maintenance System</div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem; color: var(--primary-dark);">Sign In to Workspace</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">Enter your plant engineering credentials to continue.</p>
+
+        <!-- Dynamic Login Error Alert Container -->
+        <div id="loginAlertBanner" class="alert-banner alert-error" style="display: none; margin-bottom: 1rem;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="loginAlertMessage">Invalid credentials.</span>
+        </div>
+
+        <form id="loginForm" novalidate autocomplete="off" onsubmit="event.preventDefault(); handleLogin();">
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">Work Email Address</label>
+            <input type="email" id="loginEmail" class="form-control" required placeholder="name@company.com" autocomplete="off">
+            <div id="loginEmailError" class="input-validation-msg" style="display: none;">Please provide a valid work email address.</div>
+          </div>
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label class="form-label" for="loginPassword" style="margin-bottom: 0;">Password</label>
+              <a href="#" onclick="openModal('forgotPasswordModal')" style="font-size: 0.75rem; font-weight: 600;">Forgot Password?</a>
+            </div>
+            <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••" autocomplete="new-password">
+            <div id="loginPasswordError" class="input-validation-msg" style="display: none;">Password cannot be empty.</div>
+          </div>
+          <button type="submit" id="loginSubmitBtn" class="btn btn-primary btn-block" style="margin-top: 0.5rem;">
+            <i class="fa-solid fa-right-to-bracket" id="loginBtnIcon"></i>
+            <span id="loginBtnText">Sign In to Dashboard</span>
+          </button>
+        </form>
+
+        <div class="demo-credentials-box">
+          <div style="font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.3rem;">
+            <i class="fa-solid fa-user-gear" style="color: var(--primary-blue);"></i> Select Login Portal:
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
+            <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem;" onclick="selectLoginRole('admin')">
+              <i class="fa-solid fa-crown" style="color: #f59e0b;"></i> <span>Admin Login</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem;" onclick="selectLoginRole('technician')">
+              <i class="fa-solid fa-screwdriver-wrench" style="color: #10b981;"></i> <span>Technician Login</span>
+            </button>
+          </div>
+          <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-size: 0.78rem; color: var(--text-muted);">New field specialist?</span>
+            <button type="button" class="btn btn-outline btn-sm" onclick="openModal('registerTechnicianModal')" style="font-size: 0.75rem;">
+              <i class="fa-solid fa-user-plus"></i> Register Technician Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP LAYOUT (HEADER + SIDEBAR + CORE APPLICATION MODULES) -->
+  <div class="app-container">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo-icon" style="width: 34px; height: 34px; font-size: 1rem;"><i class="fa-solid fa-industry"></i></div>
+        <div>
+          <div class="brand-title" style="font-size: 1.05rem;">SEMS INDUSTRIAL</div>
+          <div class="brand-subtitle" style="font-size: 0.65rem;">Smart Infrastructure</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-category-label">Core Modules</div>
+        
+        <div class="nav-item active" data-target="dashboardView" data-perm="dashboard" onclick="switchTab('dashboardView', this)">
+          <i class="fa-solid fa-chart-pie nav-icon"></i>
+          <span>Dashboard</span>
+        </div>
+
+        <div class="nav-item" data-target="machinesView" data-perm="machines" onclick="switchTab('machinesView', this)">
+          <i class="fa-solid fa-cubes nav-icon"></i>
+          <span>Machine Inventory</span>
+        </div>
+
+        <div class="nav-item" data-target="addMachineView" data-perm="add_machine" onclick="switchTab('addMachineView', this)">
+          <i class="fa-solid fa-circle-plus nav-icon"></i>
+          <span>Add Machine</span>
+        </div>
+
+        <div class="nav-item" data-target="schedulerView" data-perm="scheduler" onclick="switchTab('schedulerView', this)">
+          <i class="fa-solid fa-calendar-days nav-icon"></i>
+          <span>Maintenance Scheduler</span>
+        </div>
+
+        <div class="menu-category-label">Operations</div>
+
+        <div class="nav-item" data-target="techniciansView" data-perm="technicians" onclick="switchTab('techniciansView', this)">
+          <i class="fa-solid fa-user-gear nav-icon"></i>
+          <span>Technicians & Access</span>
+        </div>
+
+        <div class="nav-item" data-target="notificationsView" data-perm="notifications" onclick="switchTab('notificationsView', this)">
+          <i class="fa-solid fa-bell nav-icon"></i>
+          <span>Notification Center</span>
+          <span class="nav-badge" id="unreadNotifBadge">3</span>
+        </div>
+
+        <div class="nav-item" data-target="reportsView" data-perm="reports" onclick="switchTab('reportsView', this)">
+          <i class="fa-solid fa-file-contract nav-icon"></i>
+          <span>Reports & Analytics</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-summary">
+          <div class="avatar" id="userAvatar">AM</div>
+          <div class="user-info">
+            <span class="user-name" id="userNameDisplay">Alex Mercer (Admin)</span>
+            <span class="user-role" id="userRoleDisplay">Plant Manager (Admin)</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="logout()" title="Logout" style="padding: 0.4rem 0.6rem;">
+          <i class="fa-solid fa-power-off" style="color: #dc2626;"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-wrapper">
+      <!-- TOP HEADER BAR -->
+      <header class="top-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h1 class="page-heading-title" id="pageTitleDisplay">Executive Maintenance Dashboard</h1>
+        </div>
+
+        <div class="header-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+          <!-- Dual Theme Switcher (Dark / Light) -->
+          <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch between Dark & Light themes" aria-label="Toggle theme">
+            <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
+            <span id="themeToggleText">Dark Theme</span>
+          </button>
+
+          <!-- Current User Role Status Badge -->
+          <div id="userHeaderBadge" class="role-badge role-admin" title="Access privileges governed by System Administrator">
+            <i class="fa-solid fa-shield-halved" id="userRoleHeaderIcon"></i>
+            <span id="userRoleHeaderSpan">Admin (Full Access)</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY (SWITCHABLE VIEWS) -->
+      <div class="content-body">
+
+        <!-- ========================================================
+             PAGE 2 – DASHBOARD MODULE
+             ======================================================== -->
+        <section id="dashboardView" class="page-view active">
+          <!-- KPI SUMMARY CARDS -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Total Machines</span>
+                <div class="kpi-icon-box kpi-icon-blue"><i class="fa-solid fa-server"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiTotalMachines">150</span>
+                <span class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> Live</span>
+              </div>
+              <div class="kpi-subtext">Registered industrial assets</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Active Machines</span>
+                <div class="kpi-icon-box kpi-icon-green"><i class="fa-solid fa-circle-check"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiActiveMachines">132</span>
+                <span class="kpi-trend up"><i class="fa-solid fa-shield-halved"></i> Operational</span>
+              </div>
+              <div class="kpi-subtext">Healthy operating state</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Maintenance Due</span>
+                <div class="kpi-icon-box kpi-icon-amber"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiMaintenanceDue">10</span>
+                <span class="kpi-trend warning"><i class="fa-solid fa-triangle-exclamation"></i> Upcoming</span>
+              </div>
+              <div class="kpi-subtext">Scheduled in timeline</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Overdue Maintenance</span>
+                <div class="kpi-icon-box kpi-icon-red"><i class="fa-solid fa-circle-exclamation"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiOverdue">3</span>
+                <span class="kpi-trend warning"><i class="fa-solid fa-fire"></i> Action Required</span>
+              </div>
+              <div class="kpi-subtext">Immediate service needed</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Completed Services</span>
+                <div class="kpi-icon-box kpi-icon-purple"><i class="fa-solid fa-clipboard-check"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiCompleted">95</span>
+                <span class="kpi-trend up"><i class="fa-solid fa-check-double"></i> YTD Success</span>
+              </div>
+              <div class="kpi-subtext">Resolved maintenance logs</div>
+            </div>
+          </div>
+
+          <!-- DASHBOARD WIDGETS & CHARTS -->
+          <div class="dashboard-grid">
+            <!-- LINE CHART: MONTHLY MAINTENANCE TREND -->
+            <div class="widget-card">
+              <div class="widget-header">
+                <span class="widget-title"><i class="fa-solid fa-chart-line" style="color: var(--primary-blue);"></i> Monthly Maintenance Trend & Reliability</span>
+                <span class="priority-tag priority-medium">2026 Analytics</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="monthlyTrendChart"></canvas>
+              </div>
+            </div>
+
+            <!-- DOUGHNUT CHART: MAINTENANCE STATUS -->
+            <div class="widget-card">
+              <div class="widget-header">
+                <span class="widget-title"><i class="fa-solid fa-chart-pie" style="color: #059669;"></i> Maintenance Status Ratio</span>
+              </div>
+              <div class="chart-container" style="display: flex; justify-content: center; align-items: center;">
+                <canvas id="statusPieChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECENT ACTIVITY STREAM TABLE -->
+          <div class="widget-card">
+            <div class="widget-header">
+              <span class="widget-title"><i class="fa-solid fa-stream" style="color: var(--primary-navy);"></i> Real-Time Maintenance Activity Stream</span>
+              <button class="btn btn-outline btn-sm" onclick="switchTab('schedulerView', document.querySelector('[data-target=schedulerView]'))">
+                View Full Scheduler
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Machine Name</th>
+                    <th>Activity / Service Type</th>
+                    <th>Scheduled Date</th>
+                    <th>Status</th>
+                    <th>Assigned Engineer</th>
+                  </tr>
+                </thead>
+                <tbody id="recentActivityTableBody">
+                  <!-- Populated dynamically from API -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PAGE 3 – MACHINE MANAGEMENT (INVENTORY SYSTEM)
+             ======================================================== -->
+        <section id="machinesView" class="page-view">
+          <div class="widget-card" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 0.75rem; flex: 1; min-width: 280px;">
+                <div class="search-input-wrapper" style="flex: 1;">
+                  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                  <input type="text" id="machineSearchInput" class="form-control" style="padding-left: 2.25rem;" placeholder="Search Machine ID, Name or Department..." oninput="filterMachinesList()">
+                </div>
+                <select id="statusFilterSelect" class="form-control" style="width: 180px;" onchange="filterMachinesList()">
+                  <option value="">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Under Maintenance">Under Maintenance</option>
+                  <option value="Breakdown">Breakdown</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="openHealthScoreModal()" title="View and test Health Score Risk Engine">
+                  <i class="fa-solid fa-calculator" style="color: var(--primary-blue);"></i> Health Score Calculator
+                </button>
+                <button class="btn btn-primary" id="addMachineBtnInventory" onclick="switchTab('addMachineView', document.querySelector('[data-target=addMachineView]'))">
+                  <i class="fa-solid fa-plus"></i> Add New Machine
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="widget-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Machine ID</th>
+                    <th>Machine Name</th>
+                    <th>Category</th>
+                    <th>Location</th>
+                    <th>Install Date</th>
+                    <th>Next Service</th>
+                    <th>Health Score</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="machinesTableBody">
+                  <!-- Populated dynamically via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PAGE 4 – ADD MACHINE FORM
+             ======================================================== -->
+        <section id="addMachineView" class="page-view">
+          <div class="widget-card" style="max-width: 800px; margin: 0 auto;">
+            <div class="widget-header">
+              <span class="widget-title"><i class="fa-solid fa-plus-circle" style="color: var(--primary-blue);"></i> Register Equipment Asset</span>
+            </div>
+
+            <form id="addMachineForm" onsubmit="event.preventDefault(); submitAddMachine();">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Machine ID <span style="font-size: 0.75rem; color: var(--text-muted);">(Sequential, Editable)</span></label>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="addMachineId" class="form-control" required placeholder="e.g. 152">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="generateAutoId()">Auto Next ID</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Machine Name</label>
+                  <input type="text" id="addMachineName" class="form-control" required placeholder="e.g. 5-Axis CNC Milling Center">
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Machine Type</label>
+                  <select id="addMachineType" class="form-control" required>
+                    <option value="5-Axis CNC Mill">5-Axis CNC Mill</option>
+                    <option value="High Pressure Steam Boiler">High Pressure Steam Boiler</option>
+                    <option value="500-Ton Hydraulic Press">500-Ton Hydraulic Press</option>
+                    <option value="6-Axis Articulated Robot">6-Axis Articulated Robot</option>
+                    <option value="Rotary Screw Compressor">Rotary Screw Compressor</option>
+                    <option value="Industrial Centrifugal Chiller">Industrial Centrifugal Chiller</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Category</label>
+                  <select id="addCategory" class="form-control" required>
+                    <option value="CNC Machining">CNC Machining</option>
+                    <option value="Thermal Utilities">Thermal Utilities</option>
+                    <option value="Heavy Stamping">Heavy Stamping</option>
+                    <option value="Automation">Automation</option>
+                    <option value="Compressed Air">Compressed Air</option>
+                    <option value="HVAC Systems">HVAC Systems</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Department</label>
+                  <input type="text" id="addDepartment" class="form-control" required value="Machining Shop">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Location / Bay</label>
+                  <input type="text" id="addLocation" class="form-control" required value="Bay A - Floor 1">
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label class="form-label">Installation Date</label>
+                  <input type="date" id="addInstallDate" class="form-control" required value="2024-01-15">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Manufacturer</label>
+                  <input type="text" id="addManufacturer" class="form-control" required value="Siemens Industrial">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Maintenance Interval</label>
+                  <select id="addInterval" class="form-control">
+                    <option value="Monthly">Monthly</option>
+                    <option value="Bi-Monthly">Bi-Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Annual">Annual</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Notes & Operating Specifications</label>
+                <textarea id="addNotes" class="form-control" rows="3" placeholder="Enter critical operating specs, lubrication requirements, safety parameters..."></textarea>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <button type="reset" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Equipment Record</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PAGE 5 – MAINTENANCE SCHEDULER (CALENDAR + SCHEDULING)
+             ======================================================== -->
+        <section id="schedulerView" class="page-view">
+          <div class="calendar-toolbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <h3 style="font-size: 1.1rem; font-weight: 800;"><i class="fa-solid fa-calendar-check" style="color: var(--primary-blue);"></i> Maintenance Schedule Timeline</h3>
+              <span class="badge-scheduled" style="padding: 0.3rem 0.6rem;">Active Operations</span>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn btn-primary btn-sm" onclick="openScheduleModal()">
+                <i class="fa-solid fa-plus"></i> Schedule Maintenance Task
+              </button>
+            </div>
+          </div>
+
+          <!-- SCHEDULER DATA TABLE -->
+          <div class="widget-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Task ID</th>
+                    <th>Machine</th>
+                    <th>Assigned Technician</th>
+                    <th>Maintenance Date</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Service Type</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="schedulerTableBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PAGE 6 – TECHNICIAN MANAGEMENT (REGISTER TECH + WHATSAPP)
+             ======================================================== -->
+        <section id="techniciansView" class="page-view">
+          <!-- SUB-TABS: TECHNICIAN ROSTER VS USER LOGIN & ACCESS CONTROL -->
+          <div class="sub-tabs-bar">
+            <button class="sub-tab-btn active" id="tabTechRosterBtn" onclick="switchTechSubTab('roster')">
+              <i class="fa-solid fa-users-gear"></i> Field Technician Roster
+            </button>
+            <button class="sub-tab-btn" id="tabUserAccessBtn" onclick="switchTechSubTab('access')">
+              <i class="fa-solid fa-user-shield"></i> Technician User Logins & Permissions (Admin Governed)
+            </button>
+          </div>
+
+          <!-- PANEL 1: FIELD TECHNICIAN ROSTER -->
+          <div id="techRosterPanel">
+            <div class="widget-card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800;"><i class="fa-solid fa-users-gear" style="color: var(--primary-blue);"></i> Field Specialists & Engineers</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Manage field engineers, specialist assignments, and direct WhatsApp messaging.</p>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn btn-whatsapp" onclick="openWhatsAppModal()">
+                  <i class="fa-brands fa-whatsapp"></i> Quick WhatsApp Dispatch
+                </button>
+                <button class="btn btn-primary" onclick="openAddTechModal()">
+                  <i class="fa-solid fa-user-plus"></i> Add New Technician
+                </button>
+              </div>
+            </div>
+
+            <div class="widget-card">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Technician ID</th>
+                      <th>Full Name</th>
+                      <th>Email Address</th>
+                      <th>Phone Number</th>
+                      <th>Department</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Last Login</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="techniciansTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 2: TECHNICIAN USER LOGIN & PERMISSIONS (ADMIN GOVERNED) -->
+          <div id="userAccessPanel" style="display: none;">
+            <div class="widget-card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800;"><i class="fa-solid fa-user-shield" style="color: #2563eb;"></i> Technician User Accounts & Access Control</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Admin-controlled user accounts. Create login credentials and define exact feature access permissions for each technician.</p>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="openCreateUserModal()">
+                  <i class="fa-solid fa-user-lock"></i> Create Technician User Login
+                </button>
+              </div>
+            </div>
+
+            <div class="widget-card">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Name & Contact</th>
+                      <th>Login Email</th>
+                      <th>Role & Status</th>
+                      <th>Active Feature Permissions</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <!-- Populated dynamically via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PAGE 7 – NOTIFICATIONS CENTER (WHATSAPP DISPATCH)
+             ======================================================== -->
+        <section id="notificationsView" class="page-view">
+          <div class="widget-card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="font-size: 1.1rem; font-weight: 800;"><i class="fa-solid fa-bell" style="color: #dc2626;"></i> Industrial Notification Center</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Real-time equipment alerts. Mark read/unread, edit notification details, or delete alerts.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="markAllNotifications('read')" title="Mark all alerts as Read">
+                <i class="fa-solid fa-check-double"></i> Mark All Read
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="markAllNotifications('unread')" title="Mark all alerts as Unread">
+                <i class="fa-solid fa-envelope"></i> Mark All Unread
+              </button>
+              <button class="btn btn-whatsapp" id="notifSendWABtn" onclick="openWhatsAppModal()">
+                <i class="fa-brands fa-whatsapp"></i> Send WhatsApp Alert
+              </button>
+            </div>
+          </div>
+
+          <!-- Notification Filter Bar -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);"><i class="fa-solid fa-filter"></i> Filter:</span>
+            <button class="btn btn-sm btn-secondary notif-filter-btn active" id="notifFilterAll" onclick="setNotifFilter('all')">All</button>
+            <button class="btn btn-sm btn-secondary notif-filter-btn" id="notifFilterUnread" onclick="setNotifFilter('unread')">Unread Only</button>
+            <button class="btn btn-sm btn-secondary notif-filter-btn" id="notifFilterRead" onclick="setNotifFilter('read')">Read Only</button>
+          </div>
+
+          <div class="notification-feed" id="notificationFeed">
+            <!-- Dynamic Notification Items -->
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PAGE 8 – REPORTS & ANALYTICS (EXPORT PDF / EXCEL)
+             ======================================================== -->
+        <section id="reportsView" class="page-view">
+          <div class="widget-card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="font-size: 1.1rem; font-weight: 800;"><i class="fa-solid fa-file-invoice" style="color: var(--primary-blue);"></i> Plant Analytics & Audit Reports</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Generate equipment performance, downtime analysis, and maintenance expenditure logs.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn btn-secondary" onclick="exportToExcel()">
+                <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Export Excel (.xlsx)
+              </button>
+              <button class="btn btn-primary" onclick="exportToPDF()">
+                <i class="fa-solid fa-file-pdf" style="color: #ffffff;"></i> Download PDF Report
+              </button>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="widget-card">
+              <div class="widget-header">
+                <span class="widget-title">Downtime Analysis by Department (Hours)</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="downtimeBarChart"></canvas>
+              </div>
+            </div>
+
+            <div class="widget-card">
+              <div class="widget-header">
+                <span class="widget-title">Maintenance Cost Breakdown ($)</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="costAnalysisChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODALS CONTAINER -->
+
+  <!-- WHATSAPP RECIPIENT DISPATCH MODAL -->
+  <div id="sendWhatsAppModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 640px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-brands fa-whatsapp" style="color: #25D366; font-size: 1.35rem;"></i>
+          <span>Send Technician WhatsApp Message</span>
+        </h4>
+        <button onclick="closeModal('sendWhatsAppModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="sendWhatsAppForm" onsubmit="event.preventDefault(); submitWhatsAppDispatch('auto');">
+        <div class="modal-body">
+          <!-- LIVE STATUS BANNER CONTAINER -->
+          <div id="whatsappDispatchStatusBanner" style="display: none; margin-bottom: 1rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600;"></div>
+
+          <!-- Technician Selection -->
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Select Registered Technician</label>
+              <select id="waTechSelect" class="form-control" onchange="applySelectedTechWhatsApp()">
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Number</label>
+              <input type="text" id="waRecipientPhone" class="form-control" required placeholder="e.g. 8946028566 or +91...">
+            </div>
+          </div>
+
+          <!-- Machine / Equipment Selection -->
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Select Equipment / Machine</label>
+              <select id="waMachineSelect" class="form-control" onchange="updateWhatsAppPreview()"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Priority Level</label>
+              <select id="waPrioritySelect" class="form-control" onchange="updateWhatsAppPreview()">
+                <option value="Low">Low Priority</option>
+                <option value="Medium">Medium Priority</option>
+                <option value="High" selected>High Priority</option>
+                <option value="Critical">Critical Priority</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notification Type & Due Date -->
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Notification / Work Order Type</label>
+              <select id="waTypeSelect" class="form-control" onchange="handleWATypeChange()">
+                <option value="Maintenance Due Reminder">Maintenance Due Reminder</option>
+                <option value="Overdue Critical Alert">Overdue Critical Alert</option>
+                <option value="Equipment Breakdown Emergency">Equipment Breakdown Emergency</option>
+                <option value="Technician Assignment Work Order">Technician Assignment Work Order</option>
+                <option value="Routine Inspection Notice">Routine Inspection Notice</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target / Scheduled Date</label>
+              <input type="date" id="waDueDateInput" class="form-control" onchange="updateWhatsAppPreview()">
+            </div>
+          </div>
+
+          <!-- Custom Instructions / Action Needed -->
+          <div class="form-group">
+            <label class="form-label">Specific Task Instructions / Notes</label>
+            <textarea id="waCustomNotes" class="form-control" rows="2" placeholder="e.g. Inspect spindle bearing, replace hydraulic filter..." oninput="updateWhatsAppPreview()"></textarea>
+          </div>
+
+          <!-- WhatsApp Chat Bubble Preview -->
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span class="form-label" style="margin-bottom: 0;"><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp Message Preview</span>
+              <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" onclick="copyWhatsAppMessage()">
+                <i class="fa-solid fa-copy"></i> Copy Text
+              </button>
+            </div>
+            <div class="whatsapp-chat-container">
+              <div class="whatsapp-bubble" id="whatsappMessageBubble">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <div class="whatsapp-device-note">
+            <i class="fa-solid fa-laptop" style="font-size: 1.1rem; color: #10b981;"></i>
+            <span>Opens directly in the <strong>WhatsApp Web / Desktop account</strong> logged in on this device with this recipient and message ready!</span>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('sendWhatsAppModal')">Cancel</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn-whatsapp-outline" onclick="submitWhatsAppDispatch('web')" title="Open directly in WhatsApp Web tab">
+              <i class="fa-solid fa-globe"></i> WhatsApp Web
+            </button>
+            <button type="submit" id="sendWhatsAppBtn" class="btn btn-whatsapp">
+              <i class="fa-brands fa-whatsapp" id="sendWABtnIcon"></i>
+              <span id="sendWABtnText">Send via WhatsApp</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD TECHNICIAN MODAL -->
+  <div id="addTechModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-user-plus" style="color: var(--primary-blue);"></i> Register Technician & Grant Access</h4>
+        <button onclick="closeModal('addTechModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="addTechForm" onsubmit="event.preventDefault(); submitAddTechnician();">
+        <div class="modal-body">
+          <div style="display: grid; grid-template-columns: 140px 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Tech ID <span style="color: #dc2626;">*</span></label>
+              <input type="number" id="techIdInput" class="form-control" min="1" required placeholder="e.g. 4">
+              <small style="color: var(--text-muted); font-size: 0.72rem;">Sequential ID (Editable)</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Technician Full Name <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="techNameInput" class="form-control" required placeholder="e.g. Marcus Vance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Contact <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="techPhoneInput" class="form-control" required placeholder="e.g. +1 555 234 8901">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Specialist Department <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="techDeptInput" class="form-control" required placeholder="e.g. Mechanical Systems" value="Mechanical Systems">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role / Specialization</label>
+              <select id="techRoleInput" class="form-control">
+                <option value="Senior Reliability Engineer (Technician)">Senior Reliability Engineer (Technician)</option>
+                <option value="Field Specialist (Technician)" selected>Field Specialist (Technician)</option>
+                <option value="Electrical Specialist (Technician)">Electrical Specialist (Technician)</option>
+                <option value="Automation & Controls Engineer (Technician)">Automation & Controls Engineer (Technician)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Technician Work Email <span style="color: #dc2626;">*</span></label>
+              <input type="email" id="techEmailInput" class="form-control" required placeholder="e.g. marcus@smartfactory.com">
+              <small style="color: var(--text-muted); font-size: 0.72rem;">Login username for system authentication</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Login Password <span style="color: #dc2626;">*</span></label>
+              <input type="password" id="techPasswordInput" class="form-control" required placeholder="••••••••" autocomplete="new-password" minlength="4">
+              <small style="color: var(--text-muted); font-size: 0.72rem;">Password to access technician portal (min 4 chars)</small>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span><i class="fa-solid fa-sliders" style="color: var(--primary-blue);"></i> Granular Feature Access Permissions (Admin Governed)</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Toggle what this technician can access</span>
+            </label>
+            <div class="permissions-grid">
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_dashboard" checked>
+                <div>
+                  <div class="permission-label-title">View Dashboard</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Access KPI overview</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_machines" checked>
+                <div>
+                  <div class="permission-label-title">Machine Inventory</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Browse plant equipment</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_add_machine">
+                <div>
+                  <div class="permission-label-title">Add & Edit Machines</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Register / edit assets</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_delete_machine">
+                <div>
+                  <div class="permission-label-title">Delete Machines</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Decommission assets</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_scheduler" checked>
+                <div>
+                  <div class="permission-label-title">Maintenance Scheduler</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">View schedule tasks</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_update_scheduler" checked>
+                <div>
+                  <div class="permission-label-title">Complete / Update Tasks</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Mark tasks complete</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_notifications" checked>
+                <div>
+                  <div class="permission-label-title">Notification Center</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">View equipment alerts</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_edit_notifications">
+                <div>
+                  <div class="permission-label-title">Edit & Delete Alerts</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Modify / delete notices</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_reports">
+                <div>
+                  <div class="permission-label-title">Reports & Analytics</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Export PDF / Excel</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="addTechPerm_whatsapp">
+                <div>
+                  <div class="permission-label-title">WhatsApp Dispatch</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Send direct WhatsApp</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('addTechModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Register Technician & Grant Access</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT TECHNICIAN MODAL -->
+  <div id="editTechModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-user-pen" style="color: var(--primary-blue);"></i> Edit Technician Details</h4>
+        <button onclick="closeModal('editTechModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="editTechForm" onsubmit="event.preventDefault(); submitEditTechnician();">
+        <div class="modal-body">
+          <input type="hidden" id="editTechIdHidden">
+          <div class="form-grid-modal" style="grid-template-columns: 140px 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Tech ID <span style="color: #dc2626;">*</span></label>
+              <input type="number" id="editTechIdDisplay" class="form-control" min="1" required>
+              <small style="color: var(--text-muted); font-size: 0.72rem;">Sequential ID (Editable)</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Technician Full Name <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="editTechName" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Contact <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="editTechPhone" class="form-control" required>
+            </div>
+          </div>
+          <div class="form-grid-modal">
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <input type="text" id="editTechDept" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Availability Status</label>
+              <select id="editTechStatus" class="form-control">
+                <option value="Available">Available</option>
+                <option value="On Field">On Field</option>
+                <option value="Busy">Busy</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-modal">
+            <div class="form-group">
+              <label class="form-label">Role / Specialization</label>
+              <input type="text" id="editTechRole" class="form-control" placeholder="e.g. Electrical Specialist">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Technician Email Address</label>
+              <input type="email" id="editTechEmail" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('editTechModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Technician</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT MACHINE MODAL -->
+  <div id="editMachineModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-pen-to-square" style="color: var(--primary-blue);"></i> Edit Machine Record</h4>
+        <button onclick="closeModal('editMachineModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="editMachineForm" onsubmit="event.preventDefault(); submitEditMachine();">
+        <div class="modal-body">
+          <input type="hidden" id="editMachineIdHidden">
+          <div class="form-group">
+            <label class="form-label">Machine ID <span style="font-size: 0.75rem; color: var(--text-muted);">(Sequential, Editable)</span></label>
+            <input type="text" id="editMachineIdDisplay" class="form-control" required>
+            <small style="color: var(--text-muted); font-size: 0.72rem;">Changing Machine ID updates maintenance records and alert logs automatically.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Machine Name</label>
+            <input type="text" id="editMachineName" class="form-control" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <input type="text" id="editCategory" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <input type="text" id="editDepartment" class="form-control" required>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input type="text" id="editLocation" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Operating Status</label>
+              <select id="editStatus" class="form-control">
+                <option value="Active">Active</option>
+                <option value="Under Maintenance">Under Maintenance</option>
+                <option value="Breakdown">Breakdown</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('editMachineModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Machine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCHEDULE MAINTENANCE MODAL -->
+  <div id="scheduleModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-calendar-plus" style="color: var(--primary-blue);"></i> Schedule Maintenance Task</h4>
+        <button onclick="closeModal('scheduleModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="scheduleTaskForm" onsubmit="event.preventDefault(); submitScheduleTask();">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Select Equipment / Machine</label>
+            <select id="schedMachineSelect" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign Technician</label>
+            <select id="schedTechSelect" class="form-control" required></select>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Service Date</label>
+              <input type="date" id="schedDate" class="form-control" required min="2026-09-01" value="2026-09-25">
+              <div id="schedDateError" class="input-validation-msg" style="display: none;">Please provide a valid future maintenance date.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Priority Level</label>
+              <select id="schedPriority" class="form-control" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maintenance Service Type</label>
+            <input type="text" id="schedServiceType" class="form-control" required value="Preventive Maintenance & Alignment">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Task Description</label>
+            <textarea id="schedDescription" class="form-control" rows="3" placeholder="Specify tasks, lubrications, parts to check..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-calendar-check"></i> Confirm Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION DETAILS MODAL -->
+  <div id="notificationDetailsModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-circle-info" style="color: var(--primary-blue);"></i> Alert Details</h4>
+        <button onclick="closeModal('notificationDetailsModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="notificationDetailsBody">
+        <!-- Injected via JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('notificationDetailsModal')">Close</button>
+        <button type="button" id="notifDetailsWABtn" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Send WhatsApp Alert</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div id="forgotPasswordModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800;"><i class="fa-solid fa-key"></i> Reset Account Password</h4>
+        <button onclick="closeModal('forgotPasswordModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Enter your plant engineering email to receive password reset instructions.</p>
+        <div class="form-group">
+          <label class="form-label">Registered Work Email</label>
+          <input type="email" id="resetEmailInput" class="form-control" placeholder="admin@smartfactory.com" value="admin@smartfactory.com">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="handlePasswordReset()">Send Reset Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT NOTIFICATION MODAL -->
+  <div id="editNotificationModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-pen-to-square" style="color: var(--primary-blue);"></i> Edit Notification Alert</h4>
+        <button onclick="closeModal('editNotificationModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="editNotificationForm" onsubmit="event.preventDefault(); submitEditNotification();">
+        <div class="modal-body">
+          <input type="hidden" id="editNotifIdHidden">
+          <div class="form-group">
+            <label class="form-label">Associated Equipment / Machine ID</label>
+            <input type="text" id="editNotifMachineId" class="form-control" required placeholder="e.g. MCH-CMP-005">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alert Message <span style="color: #dc2626;">*</span></label>
+            <textarea id="editNotifMessage" class="form-control" rows="3" required placeholder="Enter alert message details..."></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Priority Level</label>
+              <select id="editNotifPriority" class="form-control">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Due Date</label>
+              <input type="date" id="editNotifDueDate" class="form-control" required>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Read Status</label>
+              <select id="editNotifStatus" class="form-control">
+                <option value="Unread">Unread</option>
+                <option value="Read">Read</option>
+                <option value="Sent via WhatsApp">Sent via WhatsApp</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notification Type</label>
+              <input type="text" id="editNotifType" class="form-control" placeholder="e.g. Maintenance Due, Overdue Alert">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('editNotificationModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Notification</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MANAGE USER ACCESS & PERMISSIONS MODAL (ADMIN GOVERNED) -->
+  <div id="manageUserAccessModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-user-shield" style="color: #2563eb;"></i> <span id="userModalTitle">Manage Technician User Login & Permissions</span></h4>
+        <button onclick="closeModal('manageUserAccessModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="manageUserAccessForm" onsubmit="event.preventDefault(); submitUserAccessForm();">
+        <div class="modal-body">
+          <input type="hidden" id="userAccessIdHidden">
+          
+          <div style="display: grid; grid-template-columns: 140px 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">User ID <span style="color: #dc2626;">*</span></label>
+              <input type="number" id="userAccessIdInput" class="form-control" min="1" required placeholder="e.g. 5">
+              <small style="color: var(--text-muted); font-size: 0.72rem;">Sequential ID (Editable)</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Full Name <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="userAccessName" class="form-control" required placeholder="e.g. Sarah Connor">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Login Email <span style="color: #dc2626;">*</span></label>
+              <input type="email" id="userAccessEmail" class="form-control" required placeholder="e.g. sarah@smartfactory.com">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" id="userAccessPassLabel">Password <span style="color: #dc2626;">*</span></label>
+              <input type="password" id="userAccessPassword" class="form-control" placeholder="••••••••" autocomplete="new-password">
+              <small id="userAccessPassHint" style="color: var(--text-muted); font-size: 0.72rem; display: none;">Leave blank to keep existing password.</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">User Role</label>
+              <select id="userAccessRole" class="form-control">
+                <option value="Senior Reliability Engineer (Technician)">Technician</option>
+                <option value="Field Specialist (Technician)">Field Specialist (Technician)</option>
+                <option value="Plant Manager (Admin)">Admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Account Status</label>
+              <select id="userAccessStatus" class="form-control">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive (Deactivated)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label"><i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> WhatsApp / Phone Contact <span style="font-size: 0.75rem; color: var(--text-muted);">(Optional)</span></label>
+              <input type="text" id="userAccessPhone" class="form-control" placeholder="e.g. +1 555 234 8901">
+            </div>
+            <div class="form-group">
+              <label class="form-label"><i class="fa-solid fa-building-gear" style="color: var(--primary-blue);"></i> Specialist Department <span style="font-size: 0.75rem; color: var(--text-muted);">(Optional)</span></label>
+              <input type="text" id="userAccessDept" class="form-control" placeholder="e.g. Mechanical Systems" value="Mechanical Systems">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span><i class="fa-solid fa-sliders" style="color: var(--primary-blue);"></i> Granular Feature Access Permissions (Admin Governed)</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Toggle what this user can access</span>
+            </label>
+            <div class="permissions-grid">
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_dashboard" checked>
+                <div>
+                  <div class="permission-label-title">View Dashboard</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Access KPI overview</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_machines" checked>
+                <div>
+                  <div class="permission-label-title">Machine Inventory</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Browse plant equipment</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_add_machine">
+                <div>
+                  <div class="permission-label-title">Add & Edit Machines</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Register / edit assets</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_delete_machine">
+                <div>
+                  <div class="permission-label-title">Delete Machines</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Decommission assets</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_scheduler" checked>
+                <div>
+                  <div class="permission-label-title">Maintenance Scheduler</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">View schedule tasks</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_update_scheduler" checked>
+                <div>
+                  <div class="permission-label-title">Complete / Update Tasks</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Mark tasks complete</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_notifications" checked>
+                <div>
+                  <div class="permission-label-title">Notification Center</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">View equipment alerts</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_edit_notifications">
+                <div>
+                  <div class="permission-label-title">Edit & Delete Alerts</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Modify / delete notices</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_reports">
+                <div>
+                  <div class="permission-label-title">Reports & Analytics</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Export PDF / Excel</div>
+                </div>
+              </label>
+
+              <label class="permission-toggle-item">
+                <input type="checkbox" id="perm_whatsapp">
+                <div>
+                  <div class="permission-label-title">WhatsApp Dispatch</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Send direct WhatsApp</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('manageUserAccessModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Save User Access</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HEALTH SCORE FORMULA BREAKDOWN & CALCULATOR MODAL -->
+  <div id="healthScoreModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 780px;">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-heart-pulse" style="color: #ef4444;"></i> Equipment Health Score Formula & Calculator</h4>
+        <button onclick="closeModal('healthScoreModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Formula Header Box -->
+        <div class="risk-formula-box">
+          <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 0.35rem;">
+            Health Score = 100 - (Maintenance Risk + Breakdown Risk + Age Risk + Usage Risk)
+          </div>
+          <div style="font-size: 0.76rem; color: var(--text-muted);">
+            Standardized Industrial Asset Telemetry Formula
+          </div>
+        </div>
+
+        <!-- Machine Score Summary Card -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 1rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span id="hsModalMachineId" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--primary-blue);">MCH-CMP-005</span>
+            <h3 id="hsModalMachineName" style="font-size: 1.15rem; font-weight: 800; margin-top: 0.2rem;">Rotary Air Compressor C4</h3>
+            <p id="hsModalSubtitle" style="font-size: 0.78rem; color: var(--text-muted);">Age: 6.0 years • Overdue: 15 days • Breakdowns: 3 • Usage: 12.0 hrs/day</p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Health Score</div>
+            <div id="hsModalScoreValue" style="font-size: 2.25rem; font-weight: 800; color: #ef4444; font-family: var(--font-mono);">45%</div>
+            <span id="hsModalScoreBadge" class="priority-tag priority-critical" style="font-size: 0.75rem;">Total Risk: 55</span>
+          </div>
+        </div>
+
+        <!-- 4 Detailed Risk Cards -->
+        <div class="risk-grid">
+          <!-- 1. Maintenance Risk -->
+          <div class="risk-card">
+            <div class="risk-card-title">
+              <span>Maintenance Risk</span>
+              <span style="color: #ef4444;">Max 40</span>
+            </div>
+            <div class="risk-card-value" id="hsModalMaintRisk" style="color: #ef4444;">20</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+              <code>(Days Overdue / Interval) × 40</code>
+            </div>
+            <div id="hsModalMaintDetails" style="font-size: 0.73rem; color: var(--text-light); margin-top: 0.35rem;">
+              (15 / 30) × 40 = 20
+            </div>
+          </div>
+
+          <!-- 2. Breakdown Risk -->
+          <div class="risk-card">
+            <div class="risk-card-title">
+              <span>Breakdown Risk</span>
+              <span style="color: #ef4444;">Max 30</span>
+            </div>
+            <div class="risk-card-value" id="hsModalBreakdownRisk" style="color: #ef4444;">18</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+              <code>Breakdowns × 6</code>
+            </div>
+            <div id="hsModalBreakdownDetails" style="font-size: 0.73rem; color: var(--text-light); margin-top: 0.35rem;">
+              3 × 6 = 18
+            </div>
+          </div>
+
+          <!-- 3. Age Risk -->
+          <div class="risk-card">
+            <div class="risk-card-title">
+              <span>Age Risk</span>
+              <span style="color: #f59e0b;">Max 20</span>
+            </div>
+            <div class="risk-card-value" id="hsModalAgeRisk" style="color: #f59e0b;">12</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+              <code>Age (Years) × 2</code>
+            </div>
+            <div id="hsModalAgeDetails" style="font-size: 0.73rem; color: var(--text-light); margin-top: 0.35rem;">
+              6 × 2 = 12
+            </div>
+          </div>
+
+          <!-- 4. Usage Risk -->
+          <div class="risk-card">
+            <div class="risk-card-title">
+              <span>Usage Risk</span>
+              <span style="color: #3b82f6;">Max 10</span>
+            </div>
+            <div class="risk-card-value" id="hsModalUsageRisk" style="color: #3b82f6;">5</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+              <code>(Daily Usage / 24) × 10</code>
+            </div>
+            <div id="hsModalUsageDetails" style="font-size: 0.73rem; color: var(--text-light); margin-top: 0.35rem;">
+              (12 / 24) × 10 = 5
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive What-If Simulator -->
+        <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <h5 style="font-weight: 800; font-size: 0.95rem;"><i class="fa-solid fa-calculator" style="color: var(--primary-blue);"></i> Live Risk & Health Score Simulator</h5>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Adjust parameters below to test the formula in real-time.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadPromptExample()" style="font-size: 0.75rem;">
+              <i class="fa-solid fa-bookmark" style="color: #f59e0b;"></i> Load Reference Example (Score 45%)
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; background: var(--bg-main); padding: 1rem; border-radius: var(--radius-md);">
+            <div>
+              <label class="form-label" style="font-size: 0.75rem;">Age (Years)</label>
+              <input type="number" id="simAge" class="form-control" min="0" max="25" step="0.5" value="6" oninput="simulateHealthScore()">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.75rem;">Days Overdue</label>
+              <input type="number" id="simOverdue" class="form-control" min="0" max="180" value="15" oninput="simulateHealthScore()">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.75rem;">Interval (Days)</label>
+              <input type="number" id="simInterval" class="form-control" min="1" max="365" value="30" oninput="simulateHealthScore()">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.75rem;">Breakdowns</label>
+              <input type="number" id="simBreakdowns" class="form-control" min="0" max="10" value="3" oninput="simulateHealthScore()">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.75rem;">Daily Usage (Hrs)</label>
+              <input type="number" id="simUsage" class="form-control" min="0" max="24" step="0.5" value="12" oninput="simulateHealthScore()">
+            </div>
+          </div>
+
+          <!-- Simulation Result Box -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--primary-light); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary-blue);">Simulated Health Score:</span>
+              <span id="simResultScore" style="font-size: 1.25rem; font-weight: 800; margin-left: 0.5rem; font-family: var(--font-mono); color: #ef4444;">45%</span>
+            </div>
+            <div id="simResultBreakdown" style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted);">
+              Total Risk: 55 (Maint: 20 + Breakdown: 18 + Age: 12 + Usage: 5)
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('healthScoreModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER TECHNICIAN MODAL (SELF-REGISTRATION) -->
+  <div id="registerTechnicianModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 style="font-weight: 800; color: var(--primary-dark);"><i class="fa-solid fa-user-plus" style="color: var(--primary-blue);"></i> Register Technician Account</h4>
+        <button onclick="closeModal('registerTechnicianModal')" class="close-modal-btn" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="registerTechForm" onsubmit="event.preventDefault(); handleRegisterTechnician();">
+        <div class="modal-body">
+          <div id="registerAlertBanner" class="alert-banner alert-error" style="display: none; margin-bottom: 1rem;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="registerAlertMessage">Registration failed.</span>
+          </div>
+
+          <div class="form-grid-modal">
+            <div class="form-group">
+              <label class="form-label">Full Name <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="regTechName" class="form-control" required placeholder="e.g. Marcus Vance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Work Email <span style="color: #dc2626;">*</span></label>
+              <input type="email" id="regTechEmail" class="form-control" required placeholder="e.g. marcus@smartfactory.com">
+            </div>
+          </div>
+
+          <div class="form-grid-modal">
+            <div class="form-group">
+              <label class="form-label">Account Password <span style="color: #dc2626;">*</span></label>
+              <input type="password" id="regTechPassword" class="form-control" required placeholder="Min 4 characters" minlength="4">
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Contact Number <span style="color: #dc2626;">*</span></label>
+              <input type="text" id="regTechPhone" class="form-control" required placeholder="e.g. +1 555 234 8901">
+            </div>
+          </div>
+
+          <div class="form-grid-modal">
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <select id="regTechDept" class="form-control">
+                <option value="Mechanical Systems">Mechanical Systems</option>
+                <option value="Electrical & Controls">Electrical & Controls</option>
+                <option value="Hydraulics & Pneumatics">Hydraulics & Pneumatics</option>
+                <option value="Automation & Robotics">Automation & Robotics</option>
+                <option value="HVAC & Utilities">HVAC & Utilities</option>
+                <option value="General Plant Operations">General Plant Operations</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Engineering Role / Title</label>
+              <input type="text" id="regTechRole" class="form-control" value="Reliability Field Technician" placeholder="e.g. Senior Reliability Engineer">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('registerTechnicianModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="regTechSubmitBtn">
+            <i class="fa-solid fa-user-check"></i> Complete Registration & Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- MAIN JS LOGIC -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
