@@ -13,7 +13,11 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
 
-DB_FILE = os.path.join(os.path.dirname(__file__), 'sems.db')
+# Use /tmp for SQLite on Render (writable), fallback to local directory
+if os.path.exists('/tmp'):
+    DB_FILE = '/tmp/sems.db'
+else:
+    DB_FILE = os.path.join(os.path.dirname(__file__), 'sems.db')
 
 ADMIN_PERMISSIONS = {
     "dashboard": True,
